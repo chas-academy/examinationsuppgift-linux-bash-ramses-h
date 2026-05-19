@@ -21,7 +21,7 @@ fi
 # Loopar igenom alla användarnamn
 for user in "$@"; do
 
-    # Skapa användaren om den inte redan finns
+    # Skapa användaren
 
         useradd -m "$user"
     
