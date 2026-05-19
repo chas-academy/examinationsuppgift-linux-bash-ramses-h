@@ -20,14 +20,14 @@ fi
 # Loopar igenom alla användarnamn
 for user in "$@"; do
 
-    # Kontrollera om användaren redan finns (så inte skriptet kraschar vid omkörning)
+    # Kontrollera om användaren redan finns
     if id "$user" &>/dev/null; then
         echo "Användaren $user finns redan. Hoppar över."
         continue
     fi
 
-    # Skapa användaren med hemkatalog
-    useradd -m "$user"
+    # Skapa användaren med hemkatalog OCH sätt standard-shell till /bin/bash
+    useradd -m -s /bin/bash "$user"
 
     # Sätt sökväg till hemkatalog
     home="/home/$user"
@@ -37,22 +37,22 @@ for user in "$@"; do
     mkdir -p "$home/Downloads"
     mkdir -p "$home/Work"
 
-    # Sätt rättigheter på mapparna (Endast ägaren kan redigera och läsa)
+    # Sätt rättigheter på mapparna (Endast ägaren kan redigera och läsa -> 700)
     chmod 700 "$home/Documents"
     chmod 700 "$home/Downloads"
     chmod 700 "$home/Work"
 
-    # Skapa välkomstfil med personligt meddelande (Första raden)
+    # Skapa välkomstfil med personligt meddelande
     echo "Välkommen $user" > "$home/welcome.txt"
 
-    # Lista ANDRA användare på systemet (filtrerar bort den nyskapade användaren)
+    # Lista ANDRA användare på systemet (filtrerar bort den aktuella användaren)
     echo "Andra användare på systemet:" >> "$home/welcome.txt"
     cut -d: -f1 /etc/passwd | grep -v "^$user$" >> "$home/welcome.txt"
 
-    # Sätt rättigheter på välkomstfilen (Endast ägaren kan läsa/skriva)
+    # Sätt rättigheter på välkomstfilen (Endast ägaren kan läsa/skriva -> 600)
     chmod 600 "$home/welcome.txt"
 
-    # Sätt ägarskap SPECIFIKT på de filer och mappar vi skapat
+    # Ändra ägarskap specifikt på de filer och mappar vi har skapat
     chown "$user:$user" "$home/welcome.txt"
     chown "$user:$user" "$home/Documents" "$home/Downloads" "$home/Work"
 
