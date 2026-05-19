@@ -24,8 +24,10 @@ do
     echo "Skapar användare: $user"
 
     # Skapa användaren med hemkatalog
-    useradd -m "$user"
-
+    useradd -m "$user" 2>/dev/null
+if id "$user" &>/dev/null; then
+    echo "Användaren $user finns redan"
+fi
     # Sätt sökväg till hemkatalog
     home_dir="/home/$user"
 
@@ -39,11 +41,11 @@ do
     chmod 700 "$home_dir/Documents"
     chmod 700 "$home_dir/Downloads"
     chmod 700 "$home_dir/Work"
-
+    chmod 700 "$home_dir"
     # Skapa welcome.txt
     welcome_file="$home_dir/welcome.txt"
 
-    echo "Välkommen $user" > "$welcome_file"
+    echo "Välkommen $user!" > "$welcome_file"
     echo "" >> "$welcome_file"
     echo "Andra användare på systemet:" >> "$welcome_file"
 
