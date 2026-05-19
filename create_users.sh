@@ -22,9 +22,9 @@ fi
 for user in "$@"; do
 
     # Skapa användaren om den inte redan finns
-    if ! id "$user" &>/dev/null; then
+
         useradd -m "$user"
-    fi
+    
 
     # Sätt sökväg till hemkatalog
     home="/home/$user"
