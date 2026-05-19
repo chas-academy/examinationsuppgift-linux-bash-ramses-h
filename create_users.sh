@@ -1,10 +1,9 @@
 #!/bin/bash
 
-# ==========================================
+# ==============================================================================
 # Script: create_users.sh
-# Beskrivning:
-# Skapar användare, mappar och welcome.txt
-# ==========================================
+# Beskrivning: Skapar användare, mappar och welcome.txt enligt strikta krav.
+# ==============================================================================
 
 # Kontrollera att scriptet körs som root
 if [ "$EUID" -ne 0 ]; then
@@ -21,10 +20,14 @@ fi
 # Loopar igenom alla användarnamn
 for user in "$@"; do
 
-    # Skapa användaren
+    # Kontrollera om användaren redan finns (så inte skriptet kraschar vid omkörning)
+    if id "$user" &>/dev/null; then
+        echo "Användaren $user finns redan. Hoppar över."
+        continue
+    fi
 
-        useradd -m "$user"
-    
+    # Skapa användaren med hemkatalog
+    useradd -m "$user"
 
     # Sätt sökväg till hemkatalog
     home="/home/$user"
@@ -34,22 +37,25 @@ for user in "$@"; do
     mkdir -p "$home/Downloads"
     mkdir -p "$home/Work"
 
-    # Sätt rättigheter
+    # Sätt rättigheter på mapparna (Endast ägaren kan redigera och läsa)
     chmod 700 "$home/Documents"
     chmod 700 "$home/Downloads"
     chmod 700 "$home/Work"
 
-    # Skapa welcome.txt
+    # Skapa välkomstfil med personligt meddelande (Första raden)
     echo "Välkommen $user" > "$home/welcome.txt"
 
-    # Lista användare på systemet
+    # Lista ANDRA användare på systemet (filtrerar bort den nyskapade användaren)
     echo "Andra användare på systemet:" >> "$home/welcome.txt"
-    cut -d: -f1 /etc/passwd >> "$home/welcome.txt"
+    cut -d: -f1 /etc/passwd | grep -v "^$user$" >> "$home/welcome.txt"
 
-    # Sätt ägarskap
-    chown -R "$user:$user" "$home"
+    # Sätt rättigheter på välkomstfilen (Endast ägaren kan läsa/skriva)
+    chmod 600 "$home/welcome.txt"
+
+    # Sätt ägarskap SPECIFIKT på de filer och mappar vi skapat
+    chown "$user:$user" "$home/welcome.txt"
+    chown "$user:$user" "$home/Documents" "$home/Downloads" "$home/Work"
 
 done
 
-# Klart
 echo "Alla användare skapades klart."
